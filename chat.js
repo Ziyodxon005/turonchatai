@@ -28,6 +28,8 @@ async function sendMessage(){
     });
 
     const data = await response.json();
+
+    console.log(data);
     messagesDiv.lastChild.textContent = "Bot: " + (data.reply || "Javob topilmadi");
   }catch(err){
     messagesDiv.lastChild.textContent = "Xato: " + err.message;
@@ -38,5 +40,6 @@ sendBtn.addEventListener("click", sendMessage);
 userInput.addEventListener("keypress", e=>{
   if(e.key==="Enter") sendMessage();
 });
+
 
 
