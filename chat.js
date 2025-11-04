@@ -1,32 +1,42 @@
-const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
-const MODEL_VERSION = process.env.REPLICATE_MODEL_VERSION;
+const messagesDiv = document.getElementById("chatMessages");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+// Bu URL sizning Vercel backend serverless function URL bo'ladi
+// Masalan: https://turon-ai.vercel.app/api/chat
+const BACKEND_URL = "/api/chat";
 
-  if(req.method === "OPTIONS") return res.status(200).end();
-  if(req.method !== "POST") return res.status(405).json({ error: "Only POST requests allowed" });
+function addMessage(text, sender){
+  const div = document.createElement("div");
+  div.className = "message " + sender;
+  div.textContent = text;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
-  const { message } = req.body;
-  const prompt = `Siz Turon O'quv Markazi chatbotisiz. Faqat o'quv markazi haqidagi savollarga javob bering: "${message}"`;
+async function sendMessage(){
+  const message = userInput.value.trim();
+  if(!message) return;
+  addMessage("Siz: " + message, "user");
+  userInput.value = "";
 
-  try {
-    const response = await fetch("https://api.replicate.com/v1/predictions", {
+  addMessage("Bot javob yozmoqda...", "bot");
+
+  try{
+    const response = await fetch(BACKEND_URL, {
       method:"POST",
-      headers:{
-        "Authorization": `Bearer ${REPLICATE_API_TOKEN}`,
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        version: MODEL_VERSION,
-        input: { prompt, max_new_tokens:256, temperature:0.2 }
-      })
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ message })
     });
+
     const data = await response.json();
-    res.status(200).json({ reply: data.output ? data.output.join(" ") : "Javob topilmadi" });
-  } catch(err) {
-    res.status(500).json({ error: err.message });
+    messagesDiv.lastChild.textContent = "Bot: " + (data.reply || "Javob topilmadi");
+  }catch(err){
+    messagesDiv.lastChild.textContent = "Xato: " + err.message;
   }
 }
+
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", e=>{
+  if(e.key==="Enter") sendMessage();
+});
