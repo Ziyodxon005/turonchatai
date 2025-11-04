@@ -2,8 +2,7 @@ const messagesDiv = document.getElementById("chatMessages");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 
-// Bu URL sizning Vercel backend serverless function URL bo'ladi
-// Masalan: https://turon-ai.vercel.app/api/chat
+// Backend URL (Vercel serverless function)
 const BACKEND_URL = "/api/chat";
 
 function addMessage(text, sender){
