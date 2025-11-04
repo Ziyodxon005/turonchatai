@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turon AI Chatbot</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #d1f0ff, #f0eaff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: #0077ff;
+      color: white;
+      padding: 14px;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      padding: 10px 14px;
+      border-radius: 14px;
+      max-width: 85%;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #0077ff;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #f1f1f1;
+      border-bottom-left-radius: 4px;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+
+    button {
+      background: #0077ff;
+      border: none;
+      color: white;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #005fcb;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">🤖 Turon AI</div>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Savolingizni yozing..." />
+      <button onclick="sendMessage()">Yuborish</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://turonchatai.vercel.app/chat.js"; // ❗ Siz bu joyni Vercel linkingiz bilan almashtirasiz
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chatBox = document.getElementById("chatBox");
+      const message = input.value.trim();
+      if (!message) return;
+
+      // Foydalanuvchi xabari
+      chatBox.innerHTML += `<div class="message user">${message}</div>`;
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Botdan javob olish
+      chatBox.innerHTML += `<div class="message bot">Yuklanmoqda...</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await res.json();
+        const reply = data.reply || "Kechirasiz, xatolik yuz berdi.";
+
+        chatBox.lastChild.innerHTML = reply;
+      } catch (err) {
+        chatBox.lastChild.innerHTML = "Server bilan bog‘lanib bo‘lmadi 😞";
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
