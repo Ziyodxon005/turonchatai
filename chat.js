@@ -2,7 +2,7 @@ const messagesDiv = document.getElementById("chatMessages");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 
-const BACKEND_URL = "/api/chat.js";
+const BACKEND_URL = "/api/chat";
 
 function addMessage(text, sender){
   const div = document.createElement("div");
@@ -38,4 +38,5 @@ sendBtn.addEventListener("click", sendMessage);
 userInput.addEventListener("keypress", e=>{
   if(e.key==="Enter") sendMessage();
 });
+
 
