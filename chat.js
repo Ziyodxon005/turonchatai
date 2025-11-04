@@ -2,7 +2,6 @@ const messagesDiv = document.getElementById("chatMessages");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 
-// Backend URL (Vercel serverless function)
 const BACKEND_URL = "/api/chat";
 
 function addMessage(text, sender){
