@@ -4,44 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Turon Chatbot</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#f5f5f5;}
-  #chat { width:400px; background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-  #messages { height:300px; overflow-y:auto; border:1px solid #ddd; padding:10px; margin-bottom:10px;}
-  input { width:calc(100% - 60px); padding:5px;}
-  button { width:50px;}
+  * { box-sizing:border-box; margin:0; padding:0; font-family: 'Roboto', sans-serif;}
+  body { display:flex; justify-content:center; align-items:center; height:100vh; background: linear-gradient(135deg,#74ebd5,#ACB6E5);}
+  .chat-container { width:400px; max-width:95%; background:#fff; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.2); overflow:hidden; display:flex; flex-direction:column;}
+  .chat-header { background:#4a90e2; color:#fff; padding:15px; font-weight:700; font-size:1.2em; text-align:center;}
+  .chat-messages { flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;}
+  .message { padding:10px 15px; border-radius:15px; max-width:80%; word-wrap:break-word;}
+  .user { background:#e1f5fe; align-self:flex-end;}
+  .bot { background:#f1f1f1; align-self:flex-start;}
+  .chat-input { display:flex; border-top:1px solid #ddd;}
+  .chat-input input { flex:1; padding:15px; border:none; outline:none;}
+  .chat-input button { padding:0 20px; border:none; background:#4a90e2; color:#fff; cursor:pointer; font-weight:700;}
+  .chat-input button:hover { background:#357ab7;}
 </style>
 </head>
 <body>
-<div id="chat">
-  <div id="messages"></div>
-  <input id="userInput" placeholder="Savol yozing...">
-  <button id="sendBtn">Yubor</button>
+<div class="chat-container">
+  <div class="chat-header">Turon O'quv Markazi Chatbot</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input">
+    <input id="userInput" placeholder="Savol yozing...">
+    <button id="sendBtn">Send</button>
+  </div>
 </div>
+
 <script>
-const API_URL = "/chat.js";
+const REPLICATE_API_TOKEN = "r8_2sAyFJ7vZBQcEg8hF5oWmsLGvEjpReO3GBo4M";
+const MODEL_VERSION = "e3178cd4aad0c18a7fb0e8b026eb03646281bea86f442e6b320d0fa5c7541b21";
+const API_URL = "https://api.replicate.com/v1/predictions";
 
-document.getElementById("sendBtn").addEventListener("click", async () => {
-  const input = document.getElementById("userInput");
-  const message = input.value;
+const messagesDiv = document.getElementById("chatMessages");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function addMessage(text, sender){
+  const div = document.createElement("div");
+  div.className = "message " + sender;
+  div.textContent = text;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+async function sendMessage(){
+  const message = userInput.value.trim();
   if(!message) return;
+  addMessage("Siz: " + message, "user");
+  userInput.value = "";
   
-  const msgDiv = document.createElement("div");
-  msgDiv.textContent = "Siz: " + message;
-  document.getElementById("messages").appendChild(msgDiv);
+  addMessage("Bot javob yozmoqda...", "bot");
 
-  const res = await fetch(API_URL, {
-    method:"POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ message })
-  });
-  const data = await res.json();
-  const botDiv = document.createElement("div");
-  botDiv.textContent = "Bot: " + (data.reply || "Javob topilmadi");
-  document.getElementById("messages").appendChild(botDiv);
-  input.value = "";
+  try{
+    const response = await fetch(API_URL, {
+      method:"POST",
+      headers:{
+        "Authorization": `Token ${REPLICATE_API_TOKEN}`,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        version: MODEL_VERSION,
+        input: { prompt: `Siz Turon O'quv Markazi chatbotisiz. Faqat o'quv markazi haqidagi savollarga javob bering: "${message}"`, max_new_tokens: 256, temperature:0.2 }
+      })
+    });
+
+    const data = await response.json();
+    const botReply = data.output ? data.output.join(" ") : "Javob topilmadi";
+    messagesDiv.lastChild.textContent = "Bot: " + botReply;
+  }catch(err){
+    messagesDiv.lastChild.textContent = "Xato: " + err.message;
+  }
+}
+
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", e=>{
+  if(e.key==="Enter") sendMessage();
 });
 </script>
 </body>
 </html>
-
